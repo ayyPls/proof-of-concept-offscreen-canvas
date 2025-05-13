@@ -1,3 +1,5 @@
+// TODO: change to enums
+
 const FetchWorkerAbortReasons = {
     STREAM_CANCELED_FROM_MAIN_THREAD: 'STREAM_CANCELED_FROM_MAIN_THREAD'
 }
@@ -14,14 +16,8 @@ const SceneWorkerActionType = {
     MAKE_ELEMENT: 'MAKE_ELEMENT',
 }
 
-const SceneWorkerOrbitControlsEventType = {
-    WHEEL: 'wheel'
-}
-
-
 export {
     FetchWorkerAbortReasons,
     FetchWorkerActionType,
-    SceneWorkerActionType,
-    SceneWorkerOrbitControlsEventType
+    SceneWorkerActionType
 }

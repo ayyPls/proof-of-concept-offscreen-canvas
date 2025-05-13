@@ -1,30 +1,25 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh } from 'three'
-import FictionalWindow from '../proxy/FictionalWindow'
 import { SceneWorkerActionType } from './const'
 
 self.document = {}
-
-self.window = new FictionalWindow()
 
 let renderer, scene, camera, mesh
 
 self.onmessage = function ({ data }) {
   const { type, payload } = data
   switch(type) {
+    // TODO: pass data from cache/storage to render models on init
     case SceneWorkerActionType.INIT_SCENE: {
-      console.log('init scene', payload)
       const { offscreenCanvas } = payload
       initScene(offscreenCanvas)
       break
     }
     case SceneWorkerActionType.RESIZE: {
-      console.log('resize', payload)
       const { width, height } = payload
       resize(width, height)
       break
     }
     case SceneWorkerActionType.CAMERA_UPDATE: {
-      console.log('camera update event', payload)
       handleCameraUpdateEvent(payload)
       break
     }
@@ -57,17 +52,15 @@ function handleCameraUpdateEvent(cameraState){
 }
 
 function initScene(canvas) {
-  console.log(canvas)
   renderer = new WebGLRenderer({ canvas, antialias: false })
   renderer.setSize(canvas.width, canvas.height, false)
   scene = new Scene()
   camera = new PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000)
-  // camera.position.fromArray()
+  camera.position.z = 5
   const geometry = new BoxGeometry(1, 1, 1)
   const material = new MeshBasicMaterial({ color: 0x00ff00 })
   mesh = new Mesh(geometry, material)
   scene.add(mesh)
-  camera.position.z = 5
   render()
 }
 
@@ -81,10 +74,6 @@ function resize(width, height) {
 
 function render() {
   if (renderer && scene && camera) {
-    // controls.update()
-    // mesh.rotation.x += 0.01
-    // mesh.rotation.y += 0.01
     renderer.render(scene, camera)
-    // requestAnimationFrame(render)
   }
 }
