@@ -1,9 +1,10 @@
-
+import { FetchWorkerAbortReasons, FetchWorkerActionType } from './const'
 // TODO LIST:
 // [x] fetch
 // [x] worker state: loading / ready
 // [x] cancel fetch if busy
 // [x] abort stream
+// [] stop in case network error (cors, ...)
 // [] parse
 // [] send/share data in offscreen worker
 // [] share memory with main thread?
@@ -12,13 +13,7 @@
 // [] load models on tab reload/restore from localstorage
 
 // make it work in browsers that doesn't support web workers/offscreen canvas
-const AbortReasons = {
-  STREAM_CANCELED_FROM_MAIN_THREAD: 'STREAM_CANCELED_FROM_MAIN_THREAD'
-}
-const WorkerActionType = {
-  START_STREAM: 'start stream',
-  CANCEl_STREAM: 'cancel stream'
-}
+
 
 class FetchWorker {
   /**
@@ -89,14 +84,14 @@ class FetchWorker {
 const worker = new FetchWorker()
 
 self.onmessage = async function ({ data }) {
-  console.log('fetch worker');
+  // console.log('fetch worker');
   switch(data.type) {
-    case WorkerActionType.START_STREAM: {
+    case FetchWorkerActionType.START_STREAM: {
       worker.startStream(data.payload)
       break
     }
-    case WorkerActionType.CANCEl_STREAM: {
-      worker.cancelStream(AbortReasons.STREAM_CANCELED_FROM_MAIN_THREAD)
+    case FetchWorkerActionType.CANCEl_STREAM: {
+      worker.cancelStream(FetchWorkerAbortReasons.STREAM_CANCELED_FROM_MAIN_THREAD)
       break
     }
     default: throw new Error(`Unknown worker action type: ${data.type}`)

@@ -1,14 +1,14 @@
-import { useState } from "react";
+// import { useState } from "react";
 import "./App.css";
 import { ViewerLayout } from "./layout";
 
 function App() {
-  const [counter, setCounter] = useState(0);
+  // const [counter, setCounter] = useState(0);
   return (
     <ViewerLayout>
-      <button onClick={() => setCounter((count) => (count += 1))}>
+      {/* <button onClick={() => setCounter((count) => (count += 1))}>
         {counter}
-      </button>
+      </button> */}
     </ViewerLayout>
   );
 }

@@ -1,39 +1,20 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh } from 'three'
-import FictionalElementManager from '../proxy/FictionalElementManager'
 import FictionalWindow from '../proxy/FictionalWindow'
-import { OrbitControls } from 'three/examples/jsm/Addons.js'
+import { SceneWorkerActionType } from './const'
 
 self.document = {}
 
 self.window = new FictionalWindow()
 
-const elementManager = new FictionalElementManager()
-
-const SceneWorkerActionType = {
-  INIT_SCENE: 'init',
-  RESIZE: 'resize',
-  ORBIT_CONTROLS: 'orbit-controls',
-  MAKE_ELEMENT: 'make-element',
-}
-
-const OrbitControlsEventType = {
-  WHEEL: 'wheel'
-}
-
-let renderer, scene, camera, mesh, controls
+let renderer, scene, camera, mesh
 
 self.onmessage = function ({ data }) {
   const { type, payload } = data
   switch(type) {
-    case SceneWorkerActionType.MAKE_ELEMENT: {
-      console.log('make element')
-      elementManager.makeElement(payload)
-      break
-    }
     case SceneWorkerActionType.INIT_SCENE: {
       console.log('init scene', payload)
-      const { offscreenCanvas, id } = payload
-      initScene(offscreenCanvas, id)
+      const { offscreenCanvas } = payload
+      initScene(offscreenCanvas)
       break
     }
     case SceneWorkerActionType.RESIZE: {
@@ -42,9 +23,9 @@ self.onmessage = function ({ data }) {
       resize(width, height)
       break
     }
-    case SceneWorkerActionType.ORBIT_CONTROLS: {
-      console.log('orbit controls', payload)
-      handleOrbitControlsEvent(payload)
+    case SceneWorkerActionType.CAMERA_UPDATE: {
+      console.log('camera update event', payload)
+      handleCameraUpdateEvent(payload)
       break
     }
     default: throw new Error(`Unknown worker action type: ${type}`)
@@ -55,24 +36,33 @@ self.onmessageerror = function (event) {
   console.error(event)
 }
 
-function handleOrbitControlsEvent(event){
-  switch(event.type) {
-    case OrbitControlsEventType.WHEEL: {
-      console.log(event)
-      break
+function handleCameraUpdateEvent(cameraState){
+    // console.log('HANDLE ORBIT CONTROLS EVENT CAPTURED', camera, event)
+    if (camera instanceof PerspectiveCamera) {
+      camera.position.fromArray(cameraState.position)
+      camera.quaternion.fromArray(cameraState.quaternion)
+      camera.zoom = cameraState.zoom
+      camera.updateProjectionMatrix()
+      render()
     }
-    default: throw new Error(`Unknown OrbitControls event type: ${event.type}`)
-  }
+    else console.warn('SceneWorker: camera is not defined')
+    // switch(event.type) {
+    //   case SceneWorkerOrbitControlsEventType.WHEEL: {
+    //     console.log(event, 'WHEEL EVENT CAPTURED')
+    //     controls.dispatchEvent(event.payload)
+    //     break
+    //   }
+    //   default: throw new Error(`Unknown OrbitControls event type: ${event.type}`)
+    // }
 }
 
-function initScene(canvas, id) {
+function initScene(canvas) {
   console.log(canvas)
-  const element = elementManager.getElement(id)
   renderer = new WebGLRenderer({ canvas, antialias: false })
   renderer.setSize(canvas.width, canvas.height, false)
   scene = new Scene()
   camera = new PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000)
-  controls = new OrbitControls(camera, element)
+  // camera.position.fromArray()
   const geometry = new BoxGeometry(1, 1, 1)
   const material = new MeshBasicMaterial({ color: 0x00ff00 })
   mesh = new Mesh(geometry, material)
@@ -86,14 +76,15 @@ function resize(width, height) {
   camera.aspect = width / height
   camera.updateProjectionMatrix()
   renderer.setSize(width, height, false)
+  render()
 }
 
 function render() {
   if (renderer && scene && camera) {
-    controls.update()
-    mesh.rotation.x += 0.01
-    mesh.rotation.y += 0.01
+    // controls.update()
+    // mesh.rotation.x += 0.01
+    // mesh.rotation.y += 0.01
     renderer.render(scene, camera)
-    requestAnimationFrame(render)
+    // requestAnimationFrame(render)
   }
 }
